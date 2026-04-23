@@ -6,8 +6,7 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    application
+    war
 }
 
 repositories {
@@ -16,13 +15,39 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
     implementation(libs.guava)
+
+    // Thymeleaf
+    implementation("org.thymeleaf:thymeleaf:3.1.3.RELEASE")
+    implementation("org.thymeleaf:thymeleaf-spring6:3.1.2.RELEASE")
+
+    // Spring 6
+    implementation("org.springframework:spring-core:6.2.6")
+    implementation("org.springframework:spring-webmvc:6.2.6")
+    implementation("org.springframework:spring-orm:6.2.6")
+
+    // Hibernate 6
+    implementation("org.hibernate.orm:hibernate-core:6.6.13.Final")
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+
+    // HikariCP
+    implementation("com.zaxxer:HikariCP:5.1.0")
+
+    // Flyway
+    implementation("org.flywaydb:flyway-core:10.10.0")
+    implementation("org.flywaydb:flyway-database-postgresql:10.10.0")
+
+    // PostgreSQL
+    implementation("org.postgresql:postgresql:42.7.5")
+
+    // Jakarta — provided, Tomcat сам предоставляет
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
+
+    // SLF4J - logging
+    implementation("org.slf4j:slf4j-simple:2.0.16")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -32,12 +57,16 @@ java {
     }
 }
 
-application {
-    // Define the main class for the application.
-    mainClass = "org.example.App"
-}
-
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+tasks.register<Exec>("deployWar") {
+    dependsOn(tasks.named("clean"), tasks.named("war"))
+
+    group = "deployment"
+    description = "Cleans, builds the WAR file, and executes the deploy script."
+
+    commandLine("bash", "${rootProject.projectDir}/deploy.sh")
 }
