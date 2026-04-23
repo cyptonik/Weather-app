@@ -2,11 +2,14 @@ package org.weather.app;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.flywaydb.core.Flyway;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -55,6 +58,11 @@ public class HibernateConfig {
         sf.setPackagesToScan("org.weather.app");
         sf.setHibernateProperties(hibernateProperties());
         return sf;
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager(SessionFactory sessionFactory) {
+        return new HibernateTransactionManager(sessionFactory);
     }
 
     private Properties hibernateProperties() {
