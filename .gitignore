@@ -36,3 +36,4 @@ src/deploy.sh
 src/.idea
 .idea
 .gradle
+src/app/src/main/resources/secrets.properties
