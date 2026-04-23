@@ -24,12 +24,13 @@ hs_err_pid*
 replay_pid*
 
 # Ignore Gradle project-specific cache directory
-.gradle
+src/.gradle
 
 # Ignore Gradle build output directory
-build
+src/build
 
 # Ignore Kotlin plugin data
-.kotlin
-deploy.sh
+src/.kotlin
+src/deploy.sh
+src/.idea
 .idea
