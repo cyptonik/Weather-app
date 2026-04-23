@@ -28,9 +28,11 @@ src/.gradle
 
 # Ignore Gradle build output directory
 src/build
+src/app/build
 
 # Ignore Kotlin plugin data
 src/.kotlin
 src/deploy.sh
 src/.idea
 .idea
+.gradle
