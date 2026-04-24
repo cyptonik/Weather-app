@@ -63,4 +63,27 @@ public class LoginController {
 
         return "redirect:/weather";
     }
+
+    private Cookie createNewCookie(UserSession newSession) {
+        Cookie cookie = new Cookie("sessionId", newSession.getId().toString());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        return cookie;
+    }
+
+    private void handleOldSessions(User foundUser) {
+        List<UserSession> userSessions = sessionRepository.findAllByUserId(foundUser.getId());
+
+        if (userSessions.size() >= sessionAmountPerUser) {
+            List<UserSession> toDelete = userSessions.stream()
+                    .sorted(Comparator.comparing(UserSession::getExpires_at))
+                    .limit(userSessions.size() - (sessionAmountPerUser-1))
+                    .toList();
+            sessionRepository.deleteAll(toDelete);
+        }
+    }
+
+    private boolean checkPassword(String rawPassword, String hashedPassword) {
+        return BCrypt.checkpw(rawPassword + pepper, hashedPassword);
+    }
 }
