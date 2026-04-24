@@ -48,6 +48,9 @@ dependencies {
 
     // SLF4J - logging
     implementation("org.slf4j:slf4j-simple:2.0.16")
+
+    // JBCrypt
+    implementation("org.mindrot:jbcrypt:0.4")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
