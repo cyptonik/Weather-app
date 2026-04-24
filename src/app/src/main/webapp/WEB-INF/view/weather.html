@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Weather panel</title>
+    <link rel="icon" type="image/png" href="/weather-app/favicon.png">
 </head>
 <body>
     <p>Grettings, <span th:text="${login}"/></p>
+
+    <form th:action="@{/logout}" method="get">
+        <input type="submit" value="logout">
+    </form>
 </body>
 </html>
