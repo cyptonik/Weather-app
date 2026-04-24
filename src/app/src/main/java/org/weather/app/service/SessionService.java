@@ -9,11 +9,16 @@ import org.weather.app.repository.SessionRepository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class SessionService {
     private final SessionRepository sessionRepository;
+
+    @Value("${session.amount}")
+    private int sessionAmountPerUser;
 
     @Value("${session.duration.seconds}")
     private int sessionDurationSeconds;
@@ -57,6 +62,19 @@ public class SessionService {
         }
 
         return sessionRepository.findById(uuid).orElse(null);
+    }
+
+    public UserSession handleOldSessions(User foundUser) {
+        List<UserSession> userSessions = sessionRepository.findAllByUserId(foundUser.getId());
+
+        if (userSessions.size() >= sessionAmountPerUser) {
+            List<UserSession> toDelete = userSessions.stream()
+                    .sorted(Comparator.comparing(UserSession::getExpires_at))
+                    .limit(userSessions.size() - (sessionAmountPerUser-1))
+                    .toList();
+            sessionRepository.deleteAll(toDelete);
+        }
+        return sessionRepository.save(createSession(foundUser));
     }
 
     public boolean isSessionValid(UserSession session) {

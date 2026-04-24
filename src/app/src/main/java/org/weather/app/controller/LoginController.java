@@ -12,28 +12,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.weather.app.ErrorMessage;
 import org.weather.app.model.User;
 import org.weather.app.model.UserSession;
-import org.weather.app.repository.SessionRepository;
 import org.weather.app.repository.UserRepository;
 import org.weather.app.service.SessionService;
-
-import java.util.Comparator;
-import java.util.List;
 
 @Controller
 public class LoginController {
     @Value("${password.pepper}")
     private String pepper;
 
-    @Value("${session.amount}")
-    private int sessionAmountPerUser;
-
     private final UserRepository userRepository;
-    private final SessionRepository sessionRepository;
     private final SessionService sessionService;
 
-    public LoginController(UserRepository userRepository, SessionRepository sessionRepository, SessionService sessionService) {
+    public LoginController(UserRepository userRepository, SessionService sessionService) {
         this.userRepository = userRepository;
-        this.sessionRepository = sessionRepository;
         this.sessionService = sessionService;
     }
 
@@ -70,9 +61,7 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        handleOldSessions(foundUser);
-        UserSession newSession = sessionRepository.save(sessionService.createSession(foundUser));
-        response.addCookie(createNewCookie(newSession));
+        response.addCookie(createNewCookie(sessionService.handleOldSessions(foundUser)));
 
         return "redirect:/weather";
     }
@@ -82,18 +71,6 @@ public class LoginController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         return cookie;
-    }
-
-    private void handleOldSessions(User foundUser) {
-        List<UserSession> userSessions = sessionRepository.findAllByUserId(foundUser.getId());
-
-        if (userSessions.size() >= sessionAmountPerUser) {
-            List<UserSession> toDelete = userSessions.stream()
-                    .sorted(Comparator.comparing(UserSession::getExpires_at))
-                    .limit(userSessions.size() - (sessionAmountPerUser-1))
-                    .toList();
-            sessionRepository.deleteAll(toDelete);
-        }
     }
 
     private boolean checkPassword(String rawPassword, String hashedPassword) {
