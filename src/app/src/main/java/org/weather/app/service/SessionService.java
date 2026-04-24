@@ -1,15 +1,20 @@
 package org.weather.app.service;
 
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.weather.app.model.User;
 import org.weather.app.model.UserSession;
+import org.weather.app.repository.SessionRepository;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Service
 public class SessionService {
+    private final SessionRepository sessionRepository;
+
     @Value("${session.duration.seconds}")
     private int sessionDurationSeconds;
 
@@ -18,6 +23,10 @@ public class SessionService {
 
     @Value("${session.duration.hours}")
     private int sessionDurationHours;
+
+    public SessionService(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
+    }
 
     public UserSession createSession(User user) {
         UserSession userSession = new UserSession();
