@@ -49,4 +49,12 @@ public class SessionRepository {
                 sessionFactory.getCurrentSession()::remove
         );
     }
+
+    public void deleteExpired(LocalDateTime now) {
+        sessionFactory.getCurrentSession()
+                .createMutationQuery("DELETE FROM UserSession WHERE expires_at < :now")
+                .setParameter("now", now)
+                .executeUpdate();
+    }
+
 }
