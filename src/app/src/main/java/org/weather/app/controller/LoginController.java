@@ -3,8 +3,9 @@ package org.weather.app.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -15,11 +16,17 @@ import org.weather.app.repository.SessionRepository;
 import org.weather.app.repository.UserRepository;
 import org.weather.app.service.SessionService;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Comparator;
+import java.util.List;
 
 @Controller
 public class LoginController {
+    @Value("${password.pepper}")
+    private String pepper;
+
+    @Value("${session.amount}")
+    private int sessionAmountPerUser;
+
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
     private final SessionService sessionService;
@@ -41,29 +48,31 @@ public class LoginController {
 
     @PostMapping("/login")
     public String post(RedirectAttributes redirectAttributes, HttpServletRequest request, HttpServletResponse response) {
+        UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
+        if (sessionService.isSessionValid(userSession)) {
+            return "redirect:/weather";
+        }
+
         String login = request.getParameter("login");
         String password = request.getParameter("password");
-        if (login.isBlank() || password.isBlank()) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_PARAMS);
-            return "redirect:/login";
+        if (login == null || login.isBlank() || password == null || password.isBlank()) {
+            return "redirect:/login?errorMessage=" + ErrorMessage.INVALID_PARAMS;
         }
 
         User foundUser = userRepository.findByLogin(login).orElse(null);
-
         if (foundUser == null) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.USER_NOT_FOUND);
             return "redirect:/login";
         }
 
-        if (!foundUser.getPassword().equals(password)) {
+        if (!checkPassword(password, foundUser.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_PASSWORD);
             return "redirect:/login";
         }
 
-        sessionRepository.findByUserId(foundUser.getId()).ifPresent(sessionRepository::delete);
-
-        UserSession userSession = sessionRepository.save(sessionService.createSession(foundUser));
-        response.addCookie(new Cookie("sessionId", userSession.getId().toString()));
+        handleOldSessions(foundUser);
+        UserSession newSession = sessionRepository.save(sessionService.createSession(foundUser));
+        response.addCookie(createNewCookie(newSession));
 
         return "redirect:/weather";
     }
