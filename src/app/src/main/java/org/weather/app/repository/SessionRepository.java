@@ -4,9 +4,10 @@ import jakarta.transaction.Transactional;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import org.weather.app.model.User;
 import org.weather.app.model.UserSession;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,11 +27,11 @@ public class SessionRepository {
         return userSession;
     }
 
-    public Optional<UserSession> findByUserId(Integer id) {
-        return Optional.ofNullable(sessionFactory.getCurrentSession()
+    public List<UserSession> findAllByUserId(Integer id) {
+        return sessionFactory.getCurrentSession()
                 .createQuery("FROM UserSession WHERE user.id = :id", UserSession.class)
                 .setParameter("id", id)
-                .uniqueResult());
+                .list();
     }
 
     public Optional<UserSession> findById(UUID uuid) {
@@ -44,10 +45,11 @@ public class SessionRepository {
         sessionFactory.getCurrentSession().remove(userSession);
     }
 
-    public void deleteById(UUID id) {
-        findById(id).ifPresent(
-                sessionFactory.getCurrentSession()::remove
-        );
+    public void deleteAll(List<UserSession> userSessions) {
+        Session session = sessionFactory.getCurrentSession();
+        for (UserSession userSession : userSessions) {
+            session.remove(userSession);
+        }
     }
 
     public void deleteExpired(LocalDateTime now) {
