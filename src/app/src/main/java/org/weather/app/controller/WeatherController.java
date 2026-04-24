@@ -1,41 +1,23 @@
 package org.weather.app.controller;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.weather.app.model.UserSession;
-import org.weather.app.repository.SessionRepository;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.UUID;
+import org.weather.app.service.SessionService;
 
 @Controller
 public class WeatherController {
-    private final SessionRepository sessionRepository;
+    private final SessionService sessionService;
 
-    public WeatherController(SessionRepository sessionRepository) {
-        this.sessionRepository = sessionRepository;
+    public WeatherController(SessionService sessionService) {
+        this.sessionService = sessionService;
     }
 
     @GetMapping("/weather")
     public String get(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-
-        UUID uuid = Arrays.stream(cookies)
-                .filter(c -> c.getName().equals("sessionId"))
-                .map(Cookie::getValue)
-                .findFirst()
-                .map(UUID::fromString)
-                .orElse(null);
-
-        if (uuid == null) {
-            return "redirect:/login";
-        }
-
-        UserSession userSession = sessionRepository.findById(uuid).orElse(null);
-        if (userSession == null || userSession.getExpires_at().isBefore(LocalDateTime.now())) {
+        UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
+        if (!sessionService.isSessionValid(userSession)) {
             return "redirect:/login";
         }
 
