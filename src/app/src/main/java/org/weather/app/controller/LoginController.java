@@ -31,7 +31,11 @@ public class LoginController {
     }
 
     @GetMapping("/login")
-    public String get() {
+    public String get(HttpServletRequest request) {
+        UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
+        if (sessionService.isSessionValid(userSession)) {
+            return "redirect:/weather";
+        }
         return "login";
     }
 
