@@ -4,12 +4,108 @@
     <meta charset="UTF-8">
     <title>Weather panel</title>
     <link rel="icon" type="image/png" href="/weather-app/favicon.png">
+    <style>
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 10%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+        th {
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <p>Grettings, <span th:text="${login}"/></p>
 
-    <form th:action="@{/logout}" method="get">
-        <input type="submit" value="logout">
+    <p>
+    <form th:action="@{/weather}" method="post">
+        <label for="city">Find city:</label>
+        <input type="text" id="city" name="city" required>
+
+        <input type="submit" value="search">
     </form>
+    </p>
+
+    <p th:if="${errorMessage}" class="error-message"><span th:text="${errorMessage}"></span></p>
+
+    <table th:if="${foundWeather}">
+        <caption>Found cities</caption>
+        <thead>
+        <tr>
+            <th>city</th>
+            <th>longitude</th>
+            <th>latitude</th>
+            <th>description</th>
+            <th>temperature</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td th:text="${foundWeather.name}"/>
+            <td th:text="${foundWeather.coord.lon}"/>
+            <td th:text="${foundWeather.coord.lat}"/>
+            <td th:text="${foundWeather.weather.get(0).description}"/>
+            <td th:text="${foundWeather.main.temp}"/>
+            <td><img th:src="'https://openweathermap.org/img/wn/' + ${foundWeather.weather[0].icon} + '@2x.png'"/></td>
+            <td>
+                <form th:action="@{/saveWeather}" method="post">
+                    <input type="hidden" name="lon" th:value="${foundWeather.coord.lon}">
+                    <input type="hidden" name="lat" th:value="${foundWeather.coord.lat}">
+                    <input type="submit" value="save">
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <table th:if="${not #lists.isEmpty(savedWeathers)}">
+        <caption>Saved cities</caption>
+        <thead>
+        <tr>
+            <th>city</th>
+            <th>longitude</th>
+            <th>latitude</th>
+            <th>description</th>
+            <th>temperature</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="savedWeather : ${savedWeathers}">
+            <td th:text="${savedWeather.response.name}"/>
+            <td th:text="${savedWeather.response.coord.lon}"/>
+            <td th:text="${savedWeather.response.coord.lat}"/>
+            <td th:text="${savedWeather.response.weather.get(0).description}"/>
+            <td th:text="${savedWeather.response.main.temp}"/>
+            <td><img th:src="'https://openweathermap.org/img/wn/' + ${savedWeather.response.weather[0].icon} + '@2x.png'"/></td>
+            <td>
+                <form th:action="@{/deleteWeather}" method="post">
+                    <input type="hidden" name="locationId" th:value="${savedWeather.locationId}"/>
+                    <input type="submit" value="delete">
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="/weather-app/logout">logout</a>
 </body>
 </html>
