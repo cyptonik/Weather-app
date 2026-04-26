@@ -84,8 +84,15 @@ public class WeatherController {
 
         redirectAttributes.addFlashAttribute("foundWeathers",
                 citiesDto.stream()
-                        .map(dto -> weatherService.findWeatherByLatAndLon(dto.lat, dto.lon))
-                        .filter(dto -> dto.name.equals(city))
+                        .map(dto -> {
+                            OpenWeatherDataDto weather = weatherService.findWeatherByLatAndLon(dto.lat, dto.lon);
+                            weather.name = dto.name;
+                            return weather;
+                        })
+                        .filter(distinctByKey(dto ->
+                                dto.coord.lat.setScale(1, RoundingMode.HALF_UP) + "," +
+                                dto.coord.lon.setScale(1, RoundingMode.HALF_UP)
+                        ))
                         .collect(Collectors.toList()));
         return "redirect:/weather";
     }
