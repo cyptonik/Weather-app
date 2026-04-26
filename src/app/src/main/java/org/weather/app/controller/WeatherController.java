@@ -76,7 +76,11 @@ public class WeatherController {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.TIMEOUT);
             return "redirect:/weather";
         }
-        citiesDto.forEach(c -> System.out.println(c.name));
+
+        if (citiesDto.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.CITY_NOT_FOUND);
+            return "redirect:/weather";
+        }
 
         redirectAttributes.addFlashAttribute("foundWeathers",
                 citiesDto.stream()
