@@ -61,7 +61,6 @@ public class WeatherController {
         return "weather";
     }
 
-    // TODO: добавить вывод country, state, вместо latitude and longitude
     @PostMapping("/weather")
     public String search(RedirectAttributes redirectAttributes, HttpServletRequest request) {
         UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
