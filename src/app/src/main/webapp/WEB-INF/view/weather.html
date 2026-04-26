@@ -44,7 +44,7 @@
 
     <p th:if="${errorMessage}" class="error-message"><span th:text="${errorMessage}"></span></p>
 
-    <table th:if="${foundWeather}">
+    <table th:if="${not #lists.isEmpty(foundWeathers)}">
         <caption>Found cities</caption>
         <thead>
         <tr>
@@ -57,7 +57,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr th:each="foundWeather : ${foundWeathers}">
             <td th:text="${foundWeather.name}"/>
             <td th:text="${foundWeather.coord.lon}"/>
             <td th:text="${foundWeather.coord.lat}"/>
