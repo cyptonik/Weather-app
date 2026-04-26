@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login page</title>
+    <style>
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+    </style>
+
+    <link rel="icon" type="image/png" href="/weather-app/favicon.png">
+</head>
+<body>
+    <form th:action="@{/login}" method="post">
+        <label for="login">Username:</label>
+        <input type="text" id="login" name="login" required>
+
+        <label for="password">Password:</label>
+        <input type="text" id="password" name="password" required>
+
+        <input type="submit" value="Log in">
+    </form>
+
+    <p th:if="${errorMessage}" class="error-message"><span th:text="${errorMessage}"></span></p>
+    <a th:href="@{/register}">register</a>
+</body>
+</html>

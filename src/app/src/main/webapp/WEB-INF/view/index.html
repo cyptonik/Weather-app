@@ -1,12 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Main page</title>
+    <title>Weather App</title>
     <link rel="icon" type="image/png" href="/weather-app/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #718096;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        a {
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.93rem;
+            font-weight: 500;
+            font-family: 'Sora', sans-serif;
+            transition: all .15s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #2563eb; }
+
+        .btn-ghost {
+            background: #fff;
+            color: #3b82f6;
+            border: 1px solid #bfdbfe;
+        }
+        .btn-ghost:hover { background: #eff6ff; }
+    </style>
 </head>
 <body>
-    <a th:href="@{/login}">log in</a>
-    <a th:href="@{/register}">register</a>
+    <div class="center">
+        <h1>☁ Weather App</h1>
+        <p>Track current weather in cities around the world</p>
+        <div class="actions">
+            <a th:href="@{/login}" class="btn-primary">Log in</a>
+            <a th:href="@{/register}" class="btn-ghost">Register</a>
+        </div>
+    </div>
 </body>
 </html>
