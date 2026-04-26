@@ -15,6 +15,8 @@ public class Location {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String name;
+
     private BigDecimal latitude;
     private BigDecimal longitude;
 
@@ -34,6 +36,10 @@ public class Location {
         return longitude;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -48,5 +54,9 @@ public class Location {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
