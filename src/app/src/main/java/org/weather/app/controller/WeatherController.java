@@ -48,10 +48,13 @@ public class WeatherController {
         User currentUser = userSession.getUser();
         List<Location> locations = locationRepository.findAllByUserId(currentUser.getId());
         request.setAttribute("savedWeathers", locations.stream()
-                .map(loc -> new SavedWeatherDto(
-                                        loc.getId(),
-                        weatherService.findWeatherByLatAndLon(loc.getLatitude(), loc.getLongitude()))
-                )
+                .map(loc -> {
+                    SavedWeatherDto dto = new SavedWeatherDto(
+                            loc.getId(),
+                            weatherService.findWeatherByLatAndLon(loc.getLatitude(), loc.getLongitude()));
+                    dto.response.name = loc.getName();
+                    return dto;
+                })
                 .collect(Collectors.toList())
         );
         request.setAttribute("login", currentUser.getLogin());
@@ -87,6 +90,7 @@ public class WeatherController {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.CITY_NOT_FOUND);
             return "redirect:/weather";
         }
+        citiesDto.forEach(c -> System.out.println(c.name));
 
         redirectAttributes.addFlashAttribute("foundWeathers",
                 citiesDto.stream()
@@ -117,7 +121,8 @@ public class WeatherController {
 
         String latitude = request.getParameter("lat");
         String longitude = request.getParameter("lon");
-        Optional<Location> saveLocation = weatherService.buildLocation(userSession.getUser(), latitude, longitude);
+        String city = request.getParameter("city");
+        Optional<Location> saveLocation = weatherService.buildLocation(userSession.getUser(), city, latitude, longitude);
         if (saveLocation.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_CITY);
             return "redirect:/weather";
