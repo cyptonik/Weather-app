@@ -8,7 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.weather.app.ErrorMessage;
-import org.weather.app.dto.OpenWeatherDto;
+import org.weather.app.dto.OpenWeatherGeoDto;
 import org.weather.app.dto.SavedWeatherDto;
 import org.weather.app.model.Location;
 import org.weather.app.model.User;
@@ -52,9 +52,9 @@ public class WeatherController {
         return "weather";
     }
 
-    // TODO: добавить поддержку поиска городов с одинаковыми названиями
+    // TODO: добавить вывод country, state, вместо latitude and longitude
     @PostMapping("/weather")
-    public String post(RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public String search(RedirectAttributes redirectAttributes, HttpServletRequest request) {
         UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
         if (!sessionService.isSessionValid(userSession)) {
             return "redirect:/login";
@@ -66,9 +66,9 @@ public class WeatherController {
             return "redirect:/weather";
         }
 
-        OpenWeatherDto dto;
+        List<OpenWeatherGeoDto> citiesDto;
         try {
-            dto = weatherService.findWeatherByCity(city);
+            citiesDto = weatherService.findSimilarCities(city);
         } catch (HttpClientErrorException.NotFound e) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.CITY_NOT_FOUND);
             return "redirect:/weather";
@@ -76,8 +76,13 @@ public class WeatherController {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.TIMEOUT);
             return "redirect:/weather";
         }
+        citiesDto.forEach(c -> System.out.println(c.name));
 
-        redirectAttributes.addFlashAttribute("foundWeather", dto);
+        redirectAttributes.addFlashAttribute("foundWeathers",
+                citiesDto.stream()
+                        .map(dto -> weatherService.findWeatherByLatAndLon(dto.lat, dto.lon))
+                        .filter(dto -> dto.name.equals(city))
+                        .collect(Collectors.toList()));
         return "redirect:/weather";
     }
 
