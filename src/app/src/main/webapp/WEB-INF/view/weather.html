@@ -68,6 +68,7 @@
                 <form th:action="@{/saveWeather}" method="post">
                     <input type="hidden" name="lon" th:value="${foundWeather.coord.lon}">
                     <input type="hidden" name="lat" th:value="${foundWeather.coord.lat}">
+                    <input type="hidden" name="city" th:value="${foundWeather.name}">
                     <input type="submit" value="save">
                 </form>
             </td>
