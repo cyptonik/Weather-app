@@ -10,9 +10,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.weather.app.ErrorMessage;
 import org.weather.app.model.User;
 import org.weather.app.repository.UserRepository;
+import org.weather.app.service.RegistrationService;
 
 @Controller
 public class RegisterController {
+    private final RegistrationService registrationService;
     @Value("${password.pepper}")
     private String pepper;
 
@@ -21,8 +23,9 @@ public class RegisterController {
 
     private final UserRepository userRepository;
 
-    public RegisterController(UserRepository userRepository) {
+    public RegisterController(UserRepository userRepository, RegistrationService registrationService) {
         this.userRepository = userRepository;
+        this.registrationService = registrationService;
     }
 
     @GetMapping("/register")
@@ -36,6 +39,18 @@ public class RegisterController {
         String password = request.getParameter("password");
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_PARAMS);
+            return "redirect:/register";
+        }
+
+        String invalidLoginMessage = registrationService.checkLogin(login);
+        if (invalidLoginMessage != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", invalidLoginMessage);
+            return "redirect:/register";
+        }
+
+        String invalidPasswordMessage = registrationService.checkPassword(password);
+        if (invalidPasswordMessage != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", invalidPasswordMessage);
             return "redirect:/register";
         }
 
