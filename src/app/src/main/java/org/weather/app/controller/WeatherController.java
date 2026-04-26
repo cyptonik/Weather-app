@@ -8,6 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.weather.app.ErrorMessage;
+import org.weather.app.dto.OpenWeatherDataDto;
 import org.weather.app.dto.OpenWeatherGeoDto;
 import org.weather.app.dto.SavedWeatherDto;
 import org.weather.app.model.Location;
@@ -17,8 +18,13 @@ import org.weather.app.repository.LocationRepository;
 import org.weather.app.service.SessionService;
 import org.weather.app.service.WeatherService;
 
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Controller
