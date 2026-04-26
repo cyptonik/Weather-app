@@ -7,6 +7,8 @@ import jakarta.servlet.SessionTrackingMode;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+import org.weather.app.config.HibernateConfig;
+import org.weather.app.config.WebConfig;
 
 import java.util.Collections;
 

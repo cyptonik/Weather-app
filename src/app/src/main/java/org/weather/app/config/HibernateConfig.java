@@ -1,4 +1,4 @@
-package org.weather.app;
+package org.weather.app.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

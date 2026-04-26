@@ -1,4 +1,4 @@
-package org.weather.app;
+package org.weather.app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
