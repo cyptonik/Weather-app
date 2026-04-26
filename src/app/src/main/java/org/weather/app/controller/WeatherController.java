@@ -97,6 +97,11 @@ public class WeatherController {
         return "redirect:/weather";
     }
 
+    private static <T> Predicate<T> distinctByKey(Function<T, Object> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
     @PostMapping("/saveWeather")
     public String save(RedirectAttributes redirectAttributes, HttpServletRequest request) {
         UserSession userSession = sessionService.getSessionFromCookie(request.getCookies());
