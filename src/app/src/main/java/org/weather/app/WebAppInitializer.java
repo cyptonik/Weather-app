@@ -19,8 +19,12 @@ public class WebAppInitializer implements WebApplicationInitializer {
                 new AnnotationConfigWebApplicationContext();
         ctx.register(WebConfig.class, HibernateConfig.class);
 
-        ServletRegistration.Dynamic appServlet =
-		        sc.addServlet("mvc", new DispatcherServlet(ctx));
+        DispatcherServlet dispatcher = new DispatcherServlet(ctx);
+
+        // ikr it's deprecated but I dunno other way around it
+        dispatcher.setThrowExceptionIfNoHandlerFound(true);
+
+        ServletRegistration.Dynamic appServlet = sc.addServlet("mvc", dispatcher);
         appServlet.setLoadOnStartup(1);
         appServlet.addMapping("/");
 
