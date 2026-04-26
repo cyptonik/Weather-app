@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.weather.app.dto.OpenWeatherDataDto;
 import org.weather.app.dto.OpenWeatherGeoDto;
 import org.weather.app.model.Location;
@@ -36,7 +37,7 @@ public class WeatherService {
 
     public OpenWeatherDataDto findWeatherByLatAndLon(BigDecimal lat, BigDecimal lon) throws HttpClientErrorException.NotFound, ResourceAccessException {
         return restTemplate.exchange(
-                URI.create(openweatherUrlLatAndLon(lat, lon)),
+                openweatherUrlLatAndLon(lat,lon),
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<OpenWeatherDataDto>() {}
@@ -45,7 +46,7 @@ public class WeatherService {
 
     public List<OpenWeatherGeoDto> findSimilarCities(String city) throws HttpClientErrorException.NotFound, ResourceAccessException{
         return restTemplate.exchange(
-                URI.create(openweatherUrlSimilarCities(city)), HttpMethod.GET,
+                openweatherUrlSimilarCities(city), HttpMethod.GET,
                 null, new ParameterizedTypeReference<List<OpenWeatherGeoDto>>() {
                 }).getBody();
     }
@@ -63,11 +64,24 @@ public class WeatherService {
         return Optional.of(location);
     }
 
-    private String openweatherUrlLatAndLon(BigDecimal lat, BigDecimal lon) {
-        return dataUrl + "lat=" + lat.toString() + "&lon=" + lon.toString() + "&units=metric" + "&APPID=" + API_KEY;
+    private URI openweatherUrlLatAndLon(BigDecimal lat, BigDecimal lon) {
+        return UriComponentsBuilder
+                .fromUriString(dataUrl)
+                .queryParam("lat", lat.toString())
+                .queryParam("lon", lon.toString())
+                .queryParam("appid", API_KEY)
+                .queryParam("units", "metric")
+                .build()
+                .toUri();
     }
 
-    private String openweatherUrlSimilarCities(String city) {
-        return geoUrl + "q=" + city + "&limit=5&units=metric" + "&APPID=" + API_KEY;
+    private URI openweatherUrlSimilarCities(String city) {
+        return UriComponentsBuilder
+                .fromUriString(geoUrl)
+                .queryParam("q", city)
+                .queryParam("limit", 5)
+                .queryParam("appid", API_KEY)
+                .build()
+                .toUri();
     }
 }
