@@ -11,4 +11,9 @@ public class GlobalExceptionHandler {
         model.addAttribute("error", e.getMessage());
         return "error";
     }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public String handleNotFound() {
+        return "error404";
+    }
 }
