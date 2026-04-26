@@ -1,6 +1,8 @@
 package org.weather.app;
 
-public class ErrorMessage {
+public final class ErrorMessage {
+    private ErrorMessage() {}
+
     public static final String USER_NOT_FOUND = "User with this login was not found";
     public static final String CITY_NOT_FOUND = "City not found";
 
