@@ -21,4 +21,6 @@ public final class ErrorMessage {
     public static final String INVALID_PASSWORD_LENGTH = "Password length must be between 8 and 40 symbols";
     public static final String INVALID_PASSWORD_SPECIAL = "Password must contain special symbols";
     public static final String INVALID_PASSWORD_UPPERCASE = "Password must contain uppercase letters";
+
+    public static final String ALREADY_SAVED = "Location is already saved";
 }

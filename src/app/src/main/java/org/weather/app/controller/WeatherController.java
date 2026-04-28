@@ -85,6 +85,13 @@ public class WeatherController {
             return "redirect:/weather";
         }
 
+        if (locationRepository.findAllByUserId(userSession.getUser().getId()).stream().anyMatch(loc ->
+                loc.getLatitude().equals(saveLocation.get().getLatitude()) &&
+                loc.getLongitude().equals(saveLocation.get().getLongitude()))) {
+            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.ALREADY_SAVED);
+            return "redirect:/weather";
+        }
+
         locationRepository.save(saveLocation.get());
         return "redirect:/weather";
     }
