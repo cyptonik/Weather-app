@@ -3,8 +3,6 @@ package org.weather.app.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,19 +11,20 @@ import org.weather.app.ErrorMessage;
 import org.weather.app.model.User;
 import org.weather.app.model.UserSession;
 import org.weather.app.repository.UserRepository;
+import org.weather.app.service.PasswordService;
 import org.weather.app.service.SessionService;
 
 @Controller
 public class LoginController {
-    @Value("${password.pepper}")
-    private String pepper;
 
     private final UserRepository userRepository;
     private final SessionService sessionService;
+    private final PasswordService passwordService;
 
-    public LoginController(UserRepository userRepository, SessionService sessionService) {
+    public LoginController(UserRepository userRepository, SessionService sessionService, PasswordService passwordService) {
         this.userRepository = userRepository;
         this.sessionService = sessionService;
+        this.passwordService = passwordService;
     }
 
     @GetMapping("/login")
@@ -47,7 +46,8 @@ public class LoginController {
         String login = request.getParameter("login");
         String password = request.getParameter("password");
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
-            return "redirect:/login?errorMessage=" + ErrorMessage.INVALID_PARAMS;
+            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_PARAMS);
+            return "redirect:/login";
         }
 
         User foundUser = userRepository.findByLogin(login).orElse(null);
@@ -56,7 +56,7 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        if (!checkPassword(password, foundUser.getPassword())) {
+        if (!passwordService.checkPassword(password, foundUser.getPassword())) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_PASSWORD);
             return "redirect:/login";
         }
@@ -71,9 +71,5 @@ public class LoginController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         return cookie;
-    }
-
-    private boolean checkPassword(String rawPassword, String hashedPassword) {
-        return BCrypt.checkpw(rawPassword + pepper, hashedPassword);
     }
 }

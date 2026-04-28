@@ -10,13 +10,20 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.weather.app.dto.OpenWeatherDataDto;
 import org.weather.app.dto.OpenWeatherGeoDto;
+import org.weather.app.dto.SavedWeatherDto;
 import org.weather.app.model.Location;
 import org.weather.app.model.User;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class WeatherService {
@@ -29,7 +36,7 @@ public class WeatherService {
     private String geoUrl;
 
     @Value("${openweather.api.key}")
-    private String API_KEY;
+    private String apiKey;
 
     public WeatherService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -70,7 +77,7 @@ public class WeatherService {
                 .fromUriString(dataUrl)
                 .queryParam("lat", lat.toString())
                 .queryParam("lon", lon.toString())
-                .queryParam("appid", API_KEY)
+                .queryParam("appid", apiKey)
                 .queryParam("units", "metric")
                 .build()
                 .toUri();
@@ -81,8 +88,39 @@ public class WeatherService {
                 .fromUriString(geoUrl)
                 .queryParam("q", city)
                 .queryParam("limit", 5)
-                .queryParam("appid", API_KEY)
+                .queryParam("appid", apiKey)
                 .build()
                 .toUri();
+    }
+
+    public List<OpenWeatherDataDto> mapToOpenWeatherDataDto(List<OpenWeatherGeoDto> citiesDto) {
+        return citiesDto.stream()
+                .map(dto -> {
+                    OpenWeatherDataDto weather = findWeatherByLatAndLon(dto.lat, dto.lon);
+                    weather.name = dto.name;
+                    return weather;
+                })
+                .filter(distinctByKey(dto ->
+                        dto.coord.lat.setScale(1, RoundingMode.HALF_UP) + "," +
+                                dto.coord.lon.setScale(1, RoundingMode.HALF_UP)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<SavedWeatherDto> mapToSavedWeatherDto(List<Location> locations) {
+        return locations.stream()
+                .map(loc -> {
+                    SavedWeatherDto dto = new SavedWeatherDto(
+                            loc.getId(),
+                            findWeatherByLatAndLon(loc.getLatitude(), loc.getLongitude()));
+                    dto.response.name = loc.getName();
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static <T> Predicate<T> distinctByKey(Function<T, Object> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 }
