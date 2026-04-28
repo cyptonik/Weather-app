@@ -39,7 +39,12 @@ public class WeatherController {
         User currentUser = userSession.getUser();
         List<Location> locations = locationRepository.findAllByUserId(currentUser.getId());
 
-        request.setAttribute("savedWeathers", weatherService.mapToSavedWeatherDto(locations));
+        try {
+            request.setAttribute("savedWeathers", weatherService.mapToSavedWeatherDto(locations));
+        } catch (ResourceAccessException e) {
+            request.setAttribute("savedWeathers", List.of());
+            request.setAttribute("errorMessage", ErrorMessage.TIMEOUT);
+        }
         request.setAttribute("login", currentUser.getLogin());
         return "weather";
     }
