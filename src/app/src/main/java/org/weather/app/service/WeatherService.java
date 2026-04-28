@@ -36,7 +36,7 @@ public class WeatherService {
     private String geoUrl;
 
     @Value("${openweather.api.key}")
-    private String API_KEY;
+    private String apiKey;
 
     public WeatherService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -77,7 +77,7 @@ public class WeatherService {
                 .fromUriString(dataUrl)
                 .queryParam("lat", lat.toString())
                 .queryParam("lon", lon.toString())
-                .queryParam("appid", API_KEY)
+                .queryParam("appid", apiKey)
                 .queryParam("units", "metric")
                 .build()
                 .toUri();
@@ -88,7 +88,7 @@ public class WeatherService {
                 .fromUriString(geoUrl)
                 .queryParam("q", city)
                 .queryParam("limit", 5)
-                .queryParam("appid", API_KEY)
+                .queryParam("appid", apiKey)
                 .build()
                 .toUri();
     }

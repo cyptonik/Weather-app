@@ -37,14 +37,4 @@ public class UserRepository {
                         .uniqueResult()
         );
     }
-
-    public void delete(User user) {
-        sessionFactory.getCurrentSession().remove(user);
-    }
-
-    public void deleteById(Integer id) {
-        findById(id).ifPresent(
-                sessionFactory.getCurrentSession()::remove
-        );
-    }
 }

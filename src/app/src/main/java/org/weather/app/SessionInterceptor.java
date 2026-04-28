@@ -19,7 +19,7 @@ public class SessionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         UserSession session = sessionService.getSessionFromCookie(request.getCookies());
         if (!sessionService.isSessionValid(session)) {
-            response.sendRedirect("/weather-app/login");
+            response.sendRedirect(request.getPathInfo() + "/login");
             return false;
         }
         request.setAttribute("currentSession", session);

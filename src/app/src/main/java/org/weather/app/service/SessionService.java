@@ -33,7 +33,7 @@ public class SessionService {
         this.sessionRepository = sessionRepository;
     }
 
-    public UserSession createSession(User user) {
+    private UserSession createSession(User user) {
         UserSession userSession = new UserSession();
         userSession.setExpires_at(LocalDateTime.now()
                 .plusSeconds(sessionDurationSeconds)
@@ -57,6 +57,7 @@ public class SessionService {
                 .findFirst()
                 .map(UUID::fromString)
                 .orElse(null);
+
         if (uuid == null) {
             return null;
         }

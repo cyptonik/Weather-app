@@ -22,7 +22,7 @@ import java.util.Optional;
 @Controller
 public class WeatherController {
     @Value("${city.max.length}")
-    private int MAX_CITY_LENGTH;
+    private int maxCityLength;
 
     private final LocationRepository locationRepository;
     private final WeatherService weatherService;
@@ -47,7 +47,7 @@ public class WeatherController {
     @PostMapping("/weather")
     public String search(RedirectAttributes redirectAttributes, HttpServletRequest request) {
         String city = request.getParameter("city");
-        if (city == null || city.isBlank() || city.length() > MAX_CITY_LENGTH) {
+        if (city == null || city.isBlank() || city.length() > maxCityLength) {
             redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_CITY);
             return "redirect:/weather";
         }
