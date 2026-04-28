@@ -14,14 +14,11 @@ A web application for tracking weather in your saved locations. Built with pure 
  
 | Layer | Technology |
 |---|---|
-| Language | Java 21 |
-| Framework | Spring MVC 6 (no Spring Boot) |
-| Templates | Thymeleaf 3.1 |
-| ORM | Hibernate 6 + Jakarta Persistence |
-| Connection pool | HikariCP |
+| Framework | Spring MVC 6 |
+| Templates | Thymeleaf |
+| ORM | Hibernate 6 |
 | Migrations | Flyway |
 | Database | PostgreSQL |
-| Build | Gradle (WAR) |
 | Server | Apache Tomcat (external) |
 | External API | OpenWeather (Geocoding + Current Weather) |
  
@@ -99,7 +96,7 @@ password.rounds=12
 city.max.length=100
 ```
  
-> `secrets.properties` is gitignored. Never commit it.
+> `secrets.properties` is gitignored. Never commit it. Obvious, innit m8?
  
 ## Building & Running
  
@@ -123,18 +120,3 @@ Or use the custom Gradle task (requires a `deploy.sh` script at the project root
 ```bash
 ./gradlew deployWar
 ```
- 
-## How It Works
- 
-**Request lifecycle:**
- 
-1. `WebAppInitializer` bootstraps `DispatcherServlet` with `WebConfig` + `HibernateConfig`
-2. `SessionInterceptor` runs before every protected route — reads the UUID cookie, validates the session against the DB, and attaches `UserSession` as a request attribute
-3. Controllers delegate to services, services talk to repositories via Hibernate `Session`
-4. Thymeleaf renders the HTML response
-5. `SessionCleanupTask` periodically deletes expired rows from the `Sessions` table
-**Authentication flow:**
- 
-- On login a UUID session is saved to the DB with an expiry timestamp, then set as a cookie
-- On every request `SessionInterceptor` checks the cookie UUID against the DB and verifies `expires_at > now()`
-- On logout the session row is deleted and the cookie is cleared
