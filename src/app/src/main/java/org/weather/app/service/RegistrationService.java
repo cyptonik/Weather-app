@@ -6,7 +6,7 @@ import org.weather.app.ErrorMessage;
 @Service
 public class RegistrationService {
     public String checkLogin(String login) {
-        if (login.length() < 3 || login.length() > 30) {
+        if (login.length() < 4 || login.length() > 30) {
             return ErrorMessage.INVALID_LOGIN_LENGTH;
         }
 
