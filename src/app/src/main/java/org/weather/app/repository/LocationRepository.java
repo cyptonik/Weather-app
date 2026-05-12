@@ -1,7 +1,6 @@
 package org.weather.app.repository;
 
 import jakarta.transaction.Transactional;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 import org.weather.app.model.Location;
@@ -17,9 +16,8 @@ public class LocationRepository {
         this.sessionFactory = sessionFactory;
     }
 
-    public Location save(Location location) {
+    public void save(Location location) {
         sessionFactory.getCurrentSession().persist(location);
-        return location;
     }
 
     public List<Location> findAllByUserId(Integer id) {

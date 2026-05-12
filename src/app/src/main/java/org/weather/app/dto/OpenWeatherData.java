@@ -3,7 +3,7 @@ package org.weather.app.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class OpenWeatherDataDto {
+public class OpenWeatherData {
     public Coord coord;
     public String name;
     public List<Weather> weather;
