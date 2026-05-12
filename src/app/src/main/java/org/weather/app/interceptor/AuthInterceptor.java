@@ -1,4 +1,4 @@
-package org.weather.app;
+package org.weather.app.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,7 +24,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (!sessionService.isSessionValid(session)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Unauthorized\"}");
+            response.getWriter().write("{\"message\": \"Unauthorized\"}");
             return false;
         }
 
