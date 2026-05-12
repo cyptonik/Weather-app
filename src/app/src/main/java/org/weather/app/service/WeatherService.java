@@ -8,9 +8,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.weather.app.dto.OpenWeatherDataDto;
-import org.weather.app.dto.OpenWeatherGeoDto;
-import org.weather.app.dto.SavedWeatherDto;
+import org.weather.app.dto.OpenWeatherData;
+import org.weather.app.dto.OpenWeatherGeo;
+import org.weather.app.dto.SavedWeather;
 import org.weather.app.model.Location;
 import org.weather.app.model.User;
 
@@ -42,19 +42,19 @@ public class WeatherService {
         this.restTemplate = restTemplate;
     }
 
-    public OpenWeatherDataDto findWeatherByLatAndLon(BigDecimal lat, BigDecimal lon) throws HttpClientErrorException.NotFound, ResourceAccessException {
+    public OpenWeatherData findWeatherByLatAndLon(BigDecimal lat, BigDecimal lon) throws HttpClientErrorException.NotFound, ResourceAccessException {
         return restTemplate.exchange(
                 openweatherUrlLatAndLon(lat,lon),
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<OpenWeatherDataDto>() {}
+                new ParameterizedTypeReference<OpenWeatherData>() {}
         ).getBody();
     }
 
-    public List<OpenWeatherGeoDto> findSimilarCities(String city) throws HttpClientErrorException.NotFound, ResourceAccessException{
+    public List<OpenWeatherGeo> findSimilarCities(String city) throws HttpClientErrorException.NotFound, ResourceAccessException{
         return restTemplate.exchange(
                 openweatherUrlSimilarCities(city), HttpMethod.GET,
-                null, new ParameterizedTypeReference<List<OpenWeatherGeoDto>>() {
+                null, new ParameterizedTypeReference<List<OpenWeatherGeo>>() {
                 }).getBody();
     }
 
@@ -93,10 +93,10 @@ public class WeatherService {
                 .toUri();
     }
 
-    public List<OpenWeatherDataDto> mapToOpenWeatherDataDto(List<OpenWeatherGeoDto> citiesDto) {
+    public List<OpenWeatherData> mapToOpenWeatherDataDto(List<OpenWeatherGeo> citiesDto) {
         return citiesDto.stream()
                 .map(dto -> {
-                    OpenWeatherDataDto weather = findWeatherByLatAndLon(dto.lat, dto.lon);
+                    OpenWeatherData weather = findWeatherByLatAndLon(dto.lat, dto.lon);
                     weather.name = dto.name;
                     return weather;
                 })
@@ -107,13 +107,13 @@ public class WeatherService {
                 .collect(Collectors.toList());
     }
 
-    public List<SavedWeatherDto> mapToSavedWeatherDto(List<Location> locations) {
+    public List<SavedWeather> mapToSavedWeatherDto(List<Location> locations) {
         return locations.stream()
                 .map(loc -> {
-                    SavedWeatherDto dto = new SavedWeatherDto(
+                    SavedWeather dto = new SavedWeather(
                             loc.getId(),
                             findWeatherByLatAndLon(loc.getLatitude(), loc.getLongitude()));
-                    dto.response.name = loc.getName();
+                    dto.response().name = loc.getName();
                     return dto;
                 })
                 .collect(Collectors.toList());
