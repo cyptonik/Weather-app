@@ -1,15 +1,13 @@
-package org.weather.app;
+package org.weather.app.handler;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.NoHandlerFoundException;
+import org.weather.app.ErrorMessage;
 import org.weather.app.dto.ErrorDto;
 
 @ControllerAdvice
