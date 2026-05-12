@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<ErrorDto> handleHttpClientError(ResponseStatusException e) {
+    public ResponseEntity<ErrorDto> handleHttpClientError(HttpClientErrorException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorDto(ErrorMessage.CITY_NOT_FOUND));

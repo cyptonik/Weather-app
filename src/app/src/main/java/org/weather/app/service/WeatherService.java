@@ -59,10 +59,6 @@ public class WeatherService {
     }
 
     public Optional<Location> buildLocation(User user, String name, String latitude, String longitude) {
-        if (latitude == null || longitude == null) {
-            return Optional.empty();
-        }
-
         Location location = new Location();
         location.setUser(user);
         location.setLatitude(new BigDecimal(latitude));

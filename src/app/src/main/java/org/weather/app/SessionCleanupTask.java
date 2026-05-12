@@ -1,5 +1,6 @@
 package org.weather.app;
 
+import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.weather.app.repository.SessionRepository;
@@ -15,6 +16,7 @@ public class SessionCleanupTask {
     }
 
     @Scheduled(fixedRateString = "${session.cleanup.rate.ms}")
+    @Transactional
     public void cleanExpiredSessions() {
         sessionRepository.deleteExpired(LocalDateTime.now());
     }

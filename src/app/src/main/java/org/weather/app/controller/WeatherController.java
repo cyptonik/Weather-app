@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.weather.app.ErrorMessage;
+import org.weather.app.dto.OpenWeatherData;
 import org.weather.app.dto.OpenWeatherGeo;
 import org.weather.app.dto.SavedWeather;
 import org.weather.app.model.Location;
@@ -15,7 +16,6 @@ import org.weather.app.repository.LocationRepository;
 import org.weather.app.service.WeatherService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -33,14 +33,14 @@ public class WeatherController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SavedWeather>> get(HttpServletRequest request) {
+    public List<SavedWeather> get(HttpServletRequest request) {
         UserSession session = (UserSession) request.getAttribute("currentSession");
         List<Location> locations = locationRepository.findAllByUserId(session.getUser().getId());
-        return ResponseEntity.ok(weatherService.mapToSavedWeatherDto(locations));
+        return weatherService.mapToSavedWeatherDto(locations);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam("city") String city) {
+    public List<OpenWeatherData> search(@RequestParam("city") String city) {
         if (city.isBlank() || city.length() > maxCityLength) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessage.CITY_NOT_FOUND);
         }
@@ -50,7 +50,7 @@ public class WeatherController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessage.CITY_NOT_FOUND);
         }
 
-        return new ResponseEntity<>(weatherService.mapToOpenWeatherDataDto(citiesDto), HttpStatus.OK);
+        return weatherService.mapToOpenWeatherDataDto(citiesDto);
     }
 
     @PostMapping
@@ -82,10 +82,11 @@ public class WeatherController {
 
         Location location = locationRepository.findById(locationId);
         if (location == null) {
-            return ResponseEntity.status(404).body(Map.of("error", ErrorMessage.INVALID_CITY));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessage.INVALID_CITY);
         }
+
         if (!location.getUser().getId().equals(userSession.getUser().getId())) {
-            return ResponseEntity.status(403).body(Map.of("error", ErrorMessage.INVALID_PARAMS));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessage.INVALID_PARAMS);
         }
 
         locationRepository.delete(location);
