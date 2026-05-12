@@ -9,26 +9,26 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
-import org.weather.app.SessionInterceptor;
+import org.weather.app.AuthInterceptor;
 
 @EnableWebMvc
 @EnableScheduling
 @Configuration
 @ComponentScan(basePackages = "org.weather.app")
 public class WebConfig implements WebMvcConfigurer {
-    private final SessionInterceptor sessionInterceptor;
+    private final AuthInterceptor authInterceptor;
 
-    public WebConfig(SessionInterceptor sessionInterceptor) {
-        this.sessionInterceptor = sessionInterceptor;
+    public WebConfig(AuthInterceptor authInterceptor) {
+        this.authInterceptor = authInterceptor;
     }
 
-    @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(sessionInterceptor)
-                .addPathPatterns("/weather", "/saveWeather", "/deleteWeather");
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/api/**")       // защищённые эндпоинты
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/register"
+                );
     }
 
     @Bean
@@ -37,31 +37,5 @@ public class WebConfig implements WebMvcConfigurer {
         factory.setConnectTimeout(3000);
         factory.setReadTimeout(3000);
         return new RestTemplate(factory);
-    }
-
-    @Bean
-    public SpringResourceTemplateResolver templateResolver() {
-        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setPrefix("/WEB-INF/view/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setTemplateMode("HTML");
-        templateResolver.setCharacterEncoding("UTF-8");
-        templateResolver.setCacheable(false);
-        return templateResolver;
-    }
-
-    @Bean
-    public SpringTemplateEngine templateEngine() {
-        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
-        return templateEngine;
-    }
-
-    @Bean
-    public ThymeleafViewResolver viewResolver() {
-        ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
-        viewResolver.setTemplateEngine(templateEngine());
-        viewResolver.setCharacterEncoding("UTF-8");
-        return viewResolver;
     }
 }

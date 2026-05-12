@@ -21,6 +21,6 @@ public class IndexController {
             return "redirect:/weather";
         }
 
-        return "index";
+        return "old2/index";
     }
 }

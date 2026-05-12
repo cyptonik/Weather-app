@@ -26,7 +26,7 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String get() {
-        return "register";
+        return "old2/register";
     }
 
     @PostMapping("/register")

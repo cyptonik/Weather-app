@@ -19,10 +19,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(libs.guava)
 
-    // Thymeleaf
-    implementation("org.thymeleaf:thymeleaf:3.1.3.RELEASE")
-    implementation("org.thymeleaf:thymeleaf-spring6:3.1.2.RELEASE")
-
     // Spring 6
     implementation("org.springframework:spring-core:6.2.6")
     implementation("org.springframework:spring-webmvc:6.2.6")

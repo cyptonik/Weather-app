@@ -2,14 +2,18 @@ package org.weather.app.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.weather.app.ErrorMessage;
+import org.weather.app.dto.OpenWeatherDataDto;
 import org.weather.app.dto.OpenWeatherGeoDto;
+import org.weather.app.dto.SavedWeatherDto;
 import org.weather.app.model.Location;
 import org.weather.app.model.User;
 import org.weather.app.model.UserSession;
@@ -19,7 +23,8 @@ import org.weather.app.service.WeatherService;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
+@RequestMapping("/api/weather")
 public class WeatherController {
     @Value("${city.max.length}")
     private int maxCityLength;
@@ -32,76 +37,49 @@ public class WeatherController {
         this.weatherService = weatherService;
     }
 
-    @GetMapping("/weather")
-    public String get(HttpServletRequest request) {
-        UserSession userSession = (UserSession) request.getAttribute("currentSession");
-
-        User currentUser = userSession.getUser();
-        List<Location> locations = locationRepository.findAllByUserId(currentUser.getId());
-
-        try {
-            request.setAttribute("savedWeathers", weatherService.mapToSavedWeatherDto(locations));
-        } catch (ResourceAccessException e) {
-            request.setAttribute("savedWeathers", List.of());
-            request.setAttribute("errorMessage", ErrorMessage.TIMEOUT);
-        }
-        request.setAttribute("login", currentUser.getLogin());
-        return "weather";
+    @GetMapping
+    public ResponseEntity<List<SavedWeatherDto>> get(@RequestParam("id") String id) {
+        List<Location> locations = locationRepository.findAllByUserId(Integer.valueOf(id));
+        return new ResponseEntity<>(weatherService.mapToSavedWeatherDto(locations), HttpStatus.OK);
     }
 
-    @PostMapping("/weather")
-    public String search(RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        String city = request.getParameter("city");
-        if (city == null || city.isBlank() || city.length() > maxCityLength) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_CITY);
-            return "redirect:/weather";
+    @GetMapping("/search")
+    public ResponseEntity<List<OpenWeatherDataDto>> search(@RequestParam("city") String city) {
+        if (city.isBlank() || city.length() > maxCityLength) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessage.CITY_NOT_FOUND);
         }
 
-        List<OpenWeatherGeoDto> citiesDto;
-        try {
-            citiesDto = weatherService.findSimilarCities(city);
-        } catch (HttpClientErrorException.NotFound e) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.CITY_NOT_FOUND);
-            return "redirect:/weather";
-        } catch (ResourceAccessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.TIMEOUT);
-            return "redirect:/weather";
-        }
-
+        List<OpenWeatherGeoDto> citiesDto = weatherService.findSimilarCities(city);
         if (citiesDto.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.CITY_NOT_FOUND);
-            return "redirect:/weather";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorMessage.CITY_NOT_FOUND);
         }
 
-        redirectAttributes.addFlashAttribute("foundWeathers", weatherService.mapToOpenWeatherDataDto(citiesDto));
-        return "redirect:/weather";
+        return new ResponseEntity<>(weatherService.mapToOpenWeatherDataDto(citiesDto), HttpStatus.OK);
     }
 
-    @PostMapping("/saveWeather")
-    public String save(RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    @PostMapping
+    public Location save(@RequestParam("lat") String latitude,
+                         @RequestParam("lon") String longitude,
+                         @RequestParam("city") String city,
+                         HttpServletRequest request) {
         UserSession userSession = (UserSession) request.getAttribute("currentSession");
 
-        String latitude = request.getParameter("lat");
-        String longitude = request.getParameter("lon");
-        String city = request.getParameter("city");
         Optional<Location> saveLocation = weatherService.buildLocation(userSession.getUser(), city, latitude, longitude);
         if (saveLocation.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.INVALID_CITY);
-            return "redirect:/weather";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_CITY);
         }
 
-        if (locationRepository.findAllByUserId(userSession.getUser().getId()).stream().anyMatch(loc ->
-                loc.getLatitude().equals(saveLocation.get().getLatitude()) &&
-                loc.getLongitude().equals(saveLocation.get().getLongitude()))) {
-            redirectAttributes.addFlashAttribute("errorMessage", ErrorMessage.ALREADY_SAVED);
-            return "redirect:/weather";
+        if (locationRepository.findAllByUserId(userSession.getUser().getId()).stream()
+                .anyMatch(loc ->
+                    loc.getLatitude().equals(saveLocation.get().getLatitude()) &&
+                    loc.getLongitude().equals(saveLocation.get().getLongitude()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessage.ALREADY_SAVED);
         }
 
-        locationRepository.save(saveLocation.get());
-        return "redirect:/weather";
+        return locationRepository.save(saveLocation.get());
     }
 
-    @PostMapping("/deleteWeather")
+    @DeleteMapping
     public String delete(RedirectAttributes redirectAttributes, HttpServletRequest request) {
         UserSession userSession = (UserSession) request.getAttribute("currentSession");
 
@@ -125,5 +103,4 @@ public class WeatherController {
         locationRepository.delete(deleteLocation);
         return "redirect:/weather";
     }
-
 }

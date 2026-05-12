@@ -17,8 +17,9 @@ public class LocationRepository {
         this.sessionFactory = sessionFactory;
     }
 
-    public void save(Location location) {
+    public Location save(Location location) {
         sessionFactory.getCurrentSession().persist(location);
+        return location;
     }
 
     public List<Location> findAllByUserId(Integer id) {

@@ -33,7 +33,7 @@ public class LoginController {
         if (sessionService.isSessionValid(userSession)) {
             return "redirect:/weather";
         }
-        return "login";
+        return "old2/login";
     }
 
     @PostMapping("/login")
