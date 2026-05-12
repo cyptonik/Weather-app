@@ -1,10 +1,18 @@
 package org.weather.app.service;
 
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.weather.app.ErrorMessage;
 
 @Service
-public class RegistrationService {
+public class AuthService {
+    @Value("${password.pepper}")
+    private String pepper;
+
+    @Value("${password.rounds}")
+    private int rounds;
+
     public String checkLogin(String login) {
         if (login.length() < 4 || login.length() > 30) {
             return ErrorMessage.INVALID_LOGIN_LENGTH;
@@ -32,5 +40,13 @@ public class RegistrationService {
             return ErrorMessage.INVALID_PASSWORD_SPECIAL;
         }
         return null;
+    }
+
+    public boolean checkPassword(String rawPassword, String hashedPassword) {
+        return BCrypt.checkpw(rawPassword + pepper, hashedPassword);
+    }
+
+    public String hashPassword(String password) {
+        return BCrypt.hashpw(password + pepper, BCrypt.gensalt(rounds));
     }
 }
