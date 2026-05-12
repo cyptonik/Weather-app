@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="/restweather/favicon.ico">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e1117;
+    --surface: #161b27;
+    --border: #252d3d;
+    --border-focus: #3d6aff;
+    --text: #e8eaf0;
+    --muted: #5a6278;
+    --accent: #3d6aff;
+    --accent-hover: #5580ff;
+    --danger: #ff4d6a;
+    --success: #34d399;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 70% 20%, rgba(61,106,255,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(61,106,255,.05) 0%, transparent 60%);
+  }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px 36px 36px;
+    animation: fadeUp .35s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -.01em;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: var(--border-focus); }
+
+  .hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .15s, transform .1s;
+  }
+  .btn:hover { background: var(--accent-hover); }
+  .btn:active { transform: scale(.99); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .error {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--danger);
+    background: rgba(255,77,106,.08);
+    border: 1px solid rgba(255,77,106,.2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .error.visible { display: block; }
+
+  .success-msg {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--success);
+    background: rgba(52,211,153,.08);
+    border: 1px solid rgba(52,211,153,.2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .success-msg.visible { display: block; }
+
+  .footer-link {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+  .footer-link a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .footer-link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⬡ Weather</div>
+  <h1>Create account</h1>
+  <p class="subtitle">Pick a login and a strong password</p>
+
+  <div class="error" id="error"></div>
+  <div class="success-msg" id="success"></div>
+
+  <div class="field">
+    <label for="login">Login</label>
+    <input type="text" id="login" placeholder="your_login" autocomplete="username">
+    <p class="hint">4–30 chars, starts with a letter, only a–z / 0–9 / _ / -</p>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+    <p class="hint">8–40 chars, at least one uppercase letter and one special character</p>
+  </div>
+
+  <button class="btn" id="submitBtn" onclick="doRegister()">Register</button>
+
+  <p class="footer-link">Already registered? <a href="login.html">Sign in</a></p>
+</div>
+
+<script>
+  const BASE = '/restweather';
+
+  async function doRegister() {
+    const login = document.getElementById('login').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('submitBtn');
+
+    hideMessages();
+
+    if (!login || !password) {
+      showError('Fill in all fields');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Registering...';
+
+    try {
+      const res = await fetch(`${BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password })
+      });
+
+      if (res.status === 201) {
+        showSuccess('Account created! Redirecting...');
+        setTimeout(() => window.location.href = 'login.html', 1200);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || 'Registration failed');
+      }
+    } catch (e) {
+      showError('Network error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Register';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function showSuccess(msg) {
+    const el = document.getElementById('success');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function hideMessages() {
+    document.getElementById('error').classList.remove('visible');
+    document.getElementById('success').classList.remove('visible');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doRegister();
+  });
+</script>
+</body>
+</html>

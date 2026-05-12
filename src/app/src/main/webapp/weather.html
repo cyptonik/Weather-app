@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="/restweather/favicon.ico">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e1117;
+    --surface: #161b27;
+    --surface2: #1c2232;
+    --border: #252d3d;
+    --border-focus: #3d6aff;
+    --text: #e8eaf0;
+    --muted: #5a6278;
+    --accent: #3d6aff;
+    --accent-hover: #5580ff;
+    --danger: #ff4d6a;
+    --danger-bg: rgba(255,77,106,.08);
+    --danger-border: rgba(255,77,106,.2);
+    --save-color: #34d399;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 16px 64px;
+    background-image:
+      radial-gradient(ellipse 50% 30% at 80% 10%, rgba(61,106,255,.06) 0%, transparent 60%);
+  }
+
+  header {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .logout-btn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: .06em;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .logout-btn:hover { color: var(--text); border-color: #3a4456; }
+
+  main { max-width: 820px; margin: 0 auto; }
+
+  /* Search */
+  .search-block {
+    margin-bottom: 36px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 11px 16px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type="text"]:focus { border-color: var(--border-focus); }
+  input::placeholder { color: var(--muted); }
+
+  .btn-search {
+    padding: 11px 22px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .btn-search:hover { background: var(--accent-hover); }
+  .btn-search:disabled { opacity: .5; cursor: not-allowed; }
+
+  .search-error {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--danger);
+    margin-top: 10px;
+    display: none;
+  }
+  .search-error.visible { display: block; }
+
+  /* Section */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+
+  .weather-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    position: relative;
+    animation: fadeIn .25s ease both;
+    transition: border-color .15s;
+  }
+  .weather-card:hover { border-color: #2e3a50; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-city {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    padding-right: 28px;
+  }
+
+  .card-coords {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .card-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .card-temp {
+    font-family: var(--mono);
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .card-icon img {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-transform: capitalize;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .meta-item {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .meta-item span {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Delete button */
+  .btn-delete {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .btn-delete:hover {
+    border-color: var(--danger-border);
+    color: var(--danger);
+    background: var(--danger-bg);
+  }
+
+  /* Save button */
+  .btn-save {
+    width: 100%;
+    margin-top: 14px;
+    padding: 8px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    background: none;
+    border: 1px solid rgba(52,211,153,.25);
+    border-radius: 3px;
+    color: var(--save-color);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-save:hover { background: rgba(52,211,153,.07); }
+  .btn-save:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* Empty state */
+  .empty {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 24px 0;
+  }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-row {
+    display: flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 16px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⬡ Weather</div>
+  <button class="logout-btn" onclick="doLogout()">log out</button>
+</header>
+
+<main>
+  <!-- Search -->
+  <div class="search-block">
+    <div class="search-row">
+      <input type="text" id="cityInput" placeholder="Search city..." autocomplete="off">
+      <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
+    </div>
+    <div class="search-error" id="searchError"></div>
+  </div>
+
+  <!-- Search results -->
+  <div id="searchSection" style="display:none; margin-bottom: 40px;">
+    <div class="section-label">Search results</div>
+    <div class="cards-grid" id="searchResults"></div>
+  </div>
+
+  <!-- Saved locations -->
+  <div>
+    <div class="section-label">My locations</div>
+    <div id="savedSection">
+      <div class="loading-row"><span class="spinner"></span>Loading...</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const BASE = '/restweather';
+
+  // ─── Init ───────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', loadSaved);
+
+  document.getElementById('cityInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  // ─── Load saved locations ───────────────────────────
+  async function loadSaved() {
+    const container = document.getElementById('savedSection');
+    try {
+      const res = await fetch(`${BASE}/api/weather`, {
+        credentials: 'include'
+      });
+
+      if (res.status === 401) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const data = await res.json();
+      renderSaved(data);
+    } catch (e) {
+      container.innerHTML = '<div class="empty">Failed to load locations</div>';
+    }
+  }
+
+  function renderSaved(locations) {
+    const container = document.getElementById('savedSection');
+    if (!locations.length) {
+      container.innerHTML = '<div class="empty">No saved locations yet — search for a city above</div>';
+      return;
+    }
+
+    container.innerHTML = '<div class="cards-grid" id="savedGrid"></div>';
+    const grid = document.getElementById('savedGrid');
+    locations.forEach(item => {
+      grid.appendChild(buildCard(item.response, item.locationId, true));
+    });
+  }
+
+  // ─── Search ─────────────────────────────────────────
+  async function doSearch() {
+    const city = document.getElementById('cityInput').value.trim();
+    const btn = document.getElementById('searchBtn');
+    const errEl = document.getElementById('searchError');
+    const section = document.getElementById('searchSection');
+    const results = document.getElementById('searchResults');
+
+    errEl.classList.remove('visible');
+    section.style.display = 'none';
+
+    if (!city) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Searching...';
+
+    try {
+      const res = await fetch(`${BASE}/api/weather/search?city=${encodeURIComponent(city)}`, {
+        credentials: 'include'
+      });
+
+      if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showSearchError(data.error || 'City not found');
+        return;
+      }
+
+      const data = await res.json();
+      results.innerHTML = '';
+      data.forEach(w => results.appendChild(buildCard(w, null, false)));
+      section.style.display = 'block';
+    } catch (e) {
+      showSearchError('Network error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Search';
+    }
+  }
+
+  function showSearchError(msg) {
+    const el = document.getElementById('searchError');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  // ─── Save location ───────────────────────────────────
+  async function saveLocation(lat, lon, city, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      const res = await fetch(
+        `${BASE}/api/weather?lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`,
+        { method: 'POST', credentials: 'include' }
+      );
+
+      if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+      if (res.ok) {
+        btn.textContent = '✓ Saved';
+        btn.disabled = true;
+        loadSaved();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        btn.textContent = data.error || 'Error';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      btn.textContent = 'Network error';
+      btn.disabled = false;
+    }
+  }
+
+  // ─── Delete location ─────────────────────────────────
+  async function deleteLocation(locationId, cardEl) {
+    cardEl.style.opacity = '.4';
+    cardEl.style.pointerEvents = 'none';
+
+    try {
+      const res = await fetch(`${BASE}/api/weather/${locationId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (res.status === 401) { window.location.href = 'login.html'; return; }
+
+      if (res.ok) {
+        cardEl.remove();
+        // если сетка пустая — показать empty state
+        const grid = document.getElementById('savedGrid');
+        if (grid && !grid.children.length) {
+          document.getElementById('savedSection').innerHTML =
+            '<div class="empty">No saved locations yet — search for a city above</div>';
+        }
+      } else {
+        cardEl.style.opacity = '1';
+        cardEl.style.pointerEvents = 'auto';
+      }
+    } catch (e) {
+      cardEl.style.opacity = '1';
+      cardEl.style.pointerEvents = 'auto';
+    }
+  }
+
+  // ─── Logout ──────────────────────────────────────────
+  async function doLogout() {
+    await fetch(`${BASE}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    }).catch(() => {});
+    window.location.href = 'login.html';
+  }
+
+  // ─── Build card ──────────────────────────────────────
+  function buildCard(w, locationId, isSaved) {
+    const card = document.createElement('div');
+    card.className = 'weather-card';
+
+    const icon = w.weather?.[0]?.icon
+      ? `<div class="card-icon"><img src="https://openweathermap.org/img/wn/${w.weather[0].icon}@2x.png" alt=""></div>`
+      : '';
+
+    const desc = w.weather?.[0]?.description ?? '';
+    const temp = w.main?.temp != null ? Math.round(w.main.temp) : '—';
+    const feels = w.main?.feels_like != null ? Math.round(w.main.feels_like) : '—';
+    const humidity = w.main?.humidity ?? '—';
+    const lat = w.coord?.lat ?? '';
+    const lon = w.coord?.lon ?? '';
+
+    card.innerHTML = `
+      <div class="card-city">${escHtml(w.name ?? '')}</div>
+      <div class="card-coords">${lat} / ${lon}</div>
+      <div class="card-main">
+        ${icon}
+        <div>
+          <div class="card-temp">${temp}°C</div>
+          <div class="card-desc">${escHtml(desc)}</div>
+        </div>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item">Feels <span>${feels}°C</span></div>
+        <div class="meta-item">Humidity <span>${humidity}%</span></div>
+      </div>
+    `;
+
+    if (isSaved && locationId != null) {
+      const del = document.createElement('button');
+      del.className = 'btn-delete';
+      del.title = 'Remove';
+      del.textContent = '✕';
+      del.onclick = () => deleteLocation(locationId, card);
+      card.appendChild(del);
+    }
+
+    if (!isSaved) {
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn-save';
+      saveBtn.textContent = '+ Save location';
+      saveBtn.onclick = () => saveLocation(lat, lon, w.name, saveBtn);
+      card.appendChild(saveBtn);
+    }
+
+    return card;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
