@@ -20,15 +20,6 @@ public class UserRepository {
         sessionFactory.getCurrentSession().persist(user);
     }
 
-    public Optional<User> findById(Integer id) {
-        return Optional.ofNullable(
-                sessionFactory.getCurrentSession()
-                        .createQuery("FROM User WHERE id = :id", User.class)
-                        .setParameter("id", id)
-                        .uniqueResult()
-        );
-    }
-
     public Optional<User> findByLogin(String login) {
         return Optional.ofNullable(
                 sessionFactory.getCurrentSession()
